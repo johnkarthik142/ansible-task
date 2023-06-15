@@ -1,0 +1,8 @@
+---
+namespace: default
+deployment_name: nginx
+ecr_repository: public.ecr.aws/a3p5t4m2/jansi-asses1
+ecr_region: us-east-1
+ecr_account_id: 327805045086
+ecr_image_tag: latest
+replicas: 1

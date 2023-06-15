@@ -1,0 +1,42 @@
+---
+- name: Create namespace
+  k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ namespace }}"
+
+- name: Log in to AWS ECR
+  become: yes
+  environment:
+    AWS_REGION: "{{ ecr_region }}"
+  shell: aws ecr get-login-password --region {{ ecr_region }} | docker login --username AWS --password-stdin {{ ecr_region }}.dkr.ecr.{{ ecr_region }}.amazonaws.com
+
+- name: Pull nginx image from AWS ECR
+  become: yes
+  command: docker pull {{ ecr_region }}.dkr.ecr.{{ ecr_region }}.amazonaws.com/{{ ecr_repository }}:latest
+
+- name: Tag nginx image for Kubernetes
+  become: yes
+  command: docker tag {{ ecr_region }}.dkr.ecr.{{ ecr_region }}.amazonaws.com/{{ ecr_repository }}:latest {{ deployment_name }}
+
+- name: Create nginx deployment
+  k8s:
+    api_version: apps/v1
+    kind: Deployment
+    name: "{{ deployment_name }}"
+    namespace: "{{ namespace }}"
+    spec:
+      replicas: "{{ replicas }}"
+      selector:
+        matchLabels:
+          app: nginx
+      template:
+        metadata:
+          labels:
+            app: nginx
+        spec:
+          containers:
+            - name: nginx
+              image: "{{ deployment_name }}"
+              ports:
+                - containerPort: 80
