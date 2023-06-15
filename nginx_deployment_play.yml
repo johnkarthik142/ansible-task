@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+    - name: Include NGINX deployment role
+      include_role:
+          name: roles
